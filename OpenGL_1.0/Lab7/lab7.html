@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>CSCI 480 Lab 7</title>
+<script src="resources/three.js"></script>
+<script src="resources/OrbitControls.js"></script>
+<script>
+
+"use strict";
+
+var canvas, renderer, scene, camera; // Standard three.js requirements.
+
+var controls;  // An OrbitControls object that is used to implement
+               // rotation of the scene using the mouse.  (It actually rotates
+               // the camera around the scene.)
+
+var animating = false;  // Set to true when an animation is in progress.
+var frameNumber = 0;  // Frame number is advanced by 1 for each frame while animating.
+
+var earth;
+
+var pole1;
+var pole2;
+var pole3;
+var pole4;
+var pole5;
+var pole6;
+var pole7;
+var pole8;
+
+var horse1;
+var horse2;
+var horse3;
+var horse4;
+var horse5;
+var horse6;
+var horse7;
+var horse8;
+
+var caroselBase;
+var caroselRoof;
+var caroselOrbit;
+
+var horseGroup1;
+var horseGroup2;
+var horseGroup3;
+
+var cylinder1;
+var cylinder2;
+var cylinder3;
+var cylinder4;
+var cylinder5;
+var cylinder6;
+var jackPlane;
+/**
+ *  The render function draws the scene.
+ */
+function render() {
+    renderer.render(scene, camera);
+}
+
+
+/**
+ * This function is called by the init() method to create the world. 
+ */
+function createWorld() {
+    
+    renderer.setClearColor("black"); // Background color for scene.
+    scene = new THREE.Scene();
+    
+    // ------------------- Make a camera with viewpoint light ----------------------
+    
+    camera = new THREE.PerspectiveCamera(30, canvas.width/canvas.height, 0.1, 100);
+    camera.position.z = 30;
+    var light;  // A light shining from the direction of the camera; moves with the camera.
+    light = new THREE.DirectionalLight();
+    light.position.set(0,0,1);
+    camera.add(light);
+    scene.add(camera);
+    
+    //------------------- Create the scene's visible objects ----------------------
+    
+    earth = new THREE.Mesh(
+        new THREE.SphereGeometry( 3,32,16 ),
+        new THREE.MeshLambertMaterial({
+            color: "white",
+            map: makeTexture("resources/earth.jpg")
+        })
+    );
+
+    scene.add(earth);
+
+    pole1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3,0.3,7,8,1),
+        new THREE.MeshLambertMaterial({
+            color: "white",
+        })
+    );
+
+    pole2 = pole1.clone();
+    pole3 = pole1.clone();
+    pole4 = pole1.clone();
+    pole5 = pole1.clone();
+    pole6 = pole1.clone();
+    pole7 = pole1.clone();
+    pole8 = pole1.clone();
+
+    pole1.position.set(6,0,0);
+    pole2.position.set(0,0,6);
+    pole3.position.set(-6,0,0);
+    pole4.position.set(0,0,-6);
+    pole5.position.set(5.4, 0, 5.4);
+    pole6.position.set(-5.4, 0, -5.4);
+    pole7.position.set(-5.4, 0, 5.4);
+    pole8.position.set(5.4, 0, -5.4);
+
+    caroselOrbit = new THREE.Object3D();
+
+    caroselOrbit.add(pole1);
+    caroselOrbit.add(pole2);
+    caroselOrbit.add(pole3);
+    caroselOrbit.add(pole4);
+    caroselOrbit.add(pole5);
+    caroselOrbit.add(pole6);
+    caroselOrbit.add(pole7);
+    caroselOrbit.add(pole8);
+
+    caroselBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(10,10,0.3,0.3,5),
+        new THREE.MeshLambertMaterial({
+            color:0x994400
+        })
+    );
+
+    caroselRoof = caroselBase.clone();
+
+    caroselBase.position.set(0,-3.5,0);
+    caroselRoof.position.set(0,3.5,0);
+
+    caroselOrbit.add(caroselBase);
+    caroselOrbit.add(caroselRoof);
+
+    scene.add(caroselOrbit);
+
+    cylinder1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3,0.3,7,8,1),
+        new THREE.MeshLambertMaterial({
+            color: "white",
+        })
+    ); 
+
+    cylinder2 = cylinder1.clone();
+    cylinder2.rotation.x = Math.PI/3;
+    cylinder3 = cylinder1.clone();
+    cylinder3.rotation.x = 2*Math.PI/3;
+    cylinder4 = cylinder1.clone();
+    cylinder4.rotation.y = Math.PI/3;
+    cylinder5 = cylinder1.clone();
+    cylinder5.rotation.y = 2*Math.PI/3;
+    cylinder6 = cylinder1.clone();
+    cylinder6.rotation.y = 4*Math.PI/6;
+
+    jackPlane = new THREE.Object3D();
+    
+    jackPlane.add(cylinder1);
+    jackPlane.add(cylinder2);
+    jackPlane.add(cylinder3);
+    jackPlane.add(cylinder4);
+    jackPlane.add(cylinder5);
+    jackPlane.add(cylinder6);
+
+    jackPlane.position.x = 12;
+
+    scene.add(jackPlane);
+
+    horse1 = new THREE.Mesh(
+        loadModel("resources/horse.js"),
+        new THREE.MeshLambertMaterial({
+            color: white
+        })
+    );
+
+    horse1.scale.set(0.17,0.17,0.17);
+
+    horse2 = horse1.clone();
+    horse3 = horse1.clone();
+    horse4 = horse1.clone();
+    horse5 = horse1.clone();
+    horse6 = horse1.clone();
+    horse7 = horse1.clone();
+    horse8 = horse1.clone();
+
+    horse1.position.set(6,0,0);
+    horse2.position.set(0,0,6);
+    horse3.position.set(-6,0,0);
+    horse4.position.set(0,0,-6);
+    horse5.position.set(5.4, 0, 5.4);
+    horse6.position.set(-5.4, 0, -5.4);
+    horse7.position.set(-5.4, 0, 5.4);
+    horse8.position.set(5.4, 0, -5.4);
+
+    horseGroup1 = new THREE.Object3D();
+    horseGroup2 = new THREE.Object3D();
+    horseGroup3 = new THREE.Object3D();
+
+    horseGroup1.add(horse1);
+    horseGroup1.add(horse2);
+    horseGroup1.add(horse3);
+    horseGroup2.add(horse4);
+    horseGroup2.add(horse5);
+    horseGroup2.add(horse6);
+    horseGroup3.add(horse7);
+    horseGroup3.add(horse8);
+
+    scene.add(horseGroup1);
+    scene.add(horseGroup2);
+    scene.add(horseGroup3);
+    
+
+} // end function createWorld()
+
+function makeTexture(imageURL, material) {
+    function callback() {
+        if (material) {
+            material.map = texture;
+            material.needsUpdate = true;
+        }
+        render();  // render scene with texture that has just been loaded.
+    }
+    var loader = new THREE.TextureLoader();
+    var texture = loader.load(imageURL, callback);
+    return texture;
+}
+
+function loadModel(modelURL) {
+    function callback(geometry) {
+        // To be executed when the model has fully loaded.  The parameter
+        // is geometry that can be used for a THREE.Mesh object.
+        
+        render();  // Render the scene with the newly added objects.
+        
+    }
+    var loader = new THREE.JSONLoader();
+    try {
+        loader.load(modelURL, callback);
+    }
+    catch (e) {
+        // Note: Chrome gives an error if loading from local file system.
+        console.log("Error loading model from " + modelURL);
+    }
+
+}
+/**
+ *  This function is called once for each frame of the animation, before
+ *  the render() function is called for that frame.  It updates any
+ *  animated properties.  The value of the global variable frameNumber
+ *  is incrementd 1 before this function is called.
+ */
+function updateForFrame() {
+    
+    // Update size and rotation of tempObject.  DELETE THIS!
+    var loopFrame = frameNumber % 240;
+    if (loopFrame > 120) {
+        loopFrame = 240 - loopFrame;
+    }
+    
+    earth.rotation.set(0,frameNumber*0.05,0);
+    caroselOrbit.rotation.y = frameNumber*0.013;
+
+    jackPlane.rotation.y = frameNumber*0.013;
+    jackPlane.rotation.z = frameNumber*0.013;
+
+
+}
+
+
+/* ---------------------------- MOUSE AND ANIMATION SUPPORT ------------------
+
+/**
+ *  This page uses THREE.OrbitControls to let the user use the mouse to rotate
+ *  the view.  OrbitControls are designed to be used during an animation, where
+ *  the rotation is updated as part of preparing for the next frame.  The scene
+ *  is not automatically updated just because the user drags the mouse.  To get
+ *  the rotation to work without animation, I add another mouse listener to the
+ *  canvas, just to call the render() function when the user drags the mouse.
+ *  The same thing holds for touch events -- I call render for any mouse move
+ *  event with one touch.
+ */
+function installOrbitControls() {
+    controls = new THREE.OrbitControls(camera,canvas);
+    controls.noPan = true; 
+    controls.noZoom = true;
+    controls.staticMoving = true;
+    function move() {
+        controls.update();
+        if (! animating) {
+            render();
+        }
+    }
+    function down() {
+        document.addEventListener("mousemove", move, false);
+    }
+    function up() {
+        document.removeEventListener("mousemove", move, false);
+    }
+    function touch(event) {
+        if (event.touches.length == 1) {
+            move();
+        }
+    }
+    canvas.addEventListener("mousedown", down, false);
+    canvas.addEventListener("touchmove", touch, false);
+}
+
+/*  Called when user changes setting of the Animate checkbox. */
+function doAnimateCheckbox() {
+   var run = document.getElementById("animateCheckbox").checked;
+   if (run != animating) {
+       animating = run;
+       if (animating) {
+           requestAnimationFrame(doFrame);
+       }
+   }
+}
+
+/*  Drives the animation, called by system through requestAnimationFrame() */
+function doFrame() {
+    if (animating) {
+        frameNumber++;
+        updateForFrame();
+        render();
+        requestAnimationFrame(doFrame);
+    }
+}
+
+/*----------------------------- INITIALIZATION ----------------------------------------
+
+/**
+ *  This function is called by the onload event so it will run after the
+ *  page has loaded.  It creates the renderer, canvas, and scene objects,
+ *  calls createWorld() to add objects to the scene, and renders the
+ *  initial view of the scene.  If an error occurs, it is reported.
+ */
+function init() {
+    try {
+        canvas = document.getElementById("glcanvas");
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: false
+        });
+    }
+    catch (e) {
+        document.getElementById("message").innerHTML="<b>Sorry, an error occurred:<br>" +
+                e + "</b>";
+        return;
+    }
+    document.getElementById("animateCheckbox").checked = false;
+    document.getElementById("animateCheckbox").onchange = doAnimateCheckbox;
+    createWorld();
+    installOrbitControls();
+    render();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<h2>Three.js Modeling Demo: Merry-Go-Round</h2>
+
+<noscript>
+   <p style="color: #AA0000; font-weight: bold">Sorry, but this page requires JavaScript!</p>
+</noscript>
+
+<p style="color:#AA0000; font-weight: bold" id="message">
+</p>
+
+<p>
+   <label><input type="checkbox" id="animateCheckbox"><b>Animate</b></label>
+   <b style="margin-left:50px">Use the mouse to rotate the model.</b>
+</p>
+
+<div id="canvas-holder" style="float:left; border: thin solid black; background-color: white">
+   <canvas width=1200 height=600 id="glcanvas"></canvas>
+</div>
+
+</body>
+</html>
